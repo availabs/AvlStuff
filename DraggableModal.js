@@ -13,12 +13,14 @@ const DraggableContainer = styled.div`
 	position: fixed;
 	z-index: 500;
 	background-color: ${ props => props.theme.sidePanelBg };
+	color: ${ props => props.theme.textColor };
 `
 const DraggableInner = styled.div`
 	${ props => props.theme.scrollBar };
 	overflow: auto;
 	width: 100%;
 	height: 100%;
+	padding-top: 35px;
 `
 
 const DragHandle = styled.div`
@@ -110,14 +112,12 @@ export default class DraggableModal extends React.Component {
 
       if (typeof props.startPos === "string") {
         switch (props.startPos) {
-          case "top": {
+          case "top":
             return { pos: [clientWidth * 0.5 - width * 0.5, 20] };
-            break;
-          }
-          case "bottom": {
+          case "bottom":
             return { pos: [clientWidth * 0.5 - width * 0.5, clientHeight - height - 20] };
-            break;
-          }
+					case "bottom-right":
+						return { pos: [clientWidth - width - 50, clientHeight - height - 20] };
         }
       }
       else {
@@ -156,6 +156,9 @@ export default class DraggableModal extends React.Component {
             pos = [clientWidth * 0.5 - width * 0.5, clientHeight - height - 20];
             break;
           }
+					case "bottom-right":
+						pos = [clientWidth - width - 50, clientHeight - height - 20];
+						break;
         }
       }
       else {
