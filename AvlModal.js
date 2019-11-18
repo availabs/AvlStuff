@@ -1,4 +1,5 @@
 import React from "react"
+import { Link } from "react-router-dom"
 
 import styled, { keyframes } from "styled-components"
 
@@ -107,6 +108,12 @@ const ModalContainer = styled.div`
   div.body div.actions > div.user-actions > button:first-child {
     margin-left: 20px;
   }
+  div.body div.actions > div.user-actions > div.link-container {
+    display: inline-block;
+  }
+  div.body div.actions > div.user-actions > div.link-container.link-disabled {
+    cursor: not-allowed;
+  }
 `
 
 const LoadingContainer = styled.div`
@@ -117,7 +124,7 @@ const LoadingContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  background-image: radial-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0));
+  background-image: radial-gradient(rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0));
 `
 
 class Modal extends React.Component {
@@ -211,14 +218,23 @@ class Modal extends React.Component {
             { !this.props.actions.length || Boolean(this.state.onResolve) || Boolean(this.state.onReject) ? null :
               <div className="user-actions">
                 {
-                  this.props.actions.map(({ label, action, type="primary", disabled=false }, i) =>
-                    <button className={ `btn btn-outline-${ type }` }
-                      onClick={ e => this.onAction(e, action) }
-                      key={ i }
-                      disabled={ disabled }>
-                      { label }
-                    </button>
-                  )
+                  this.props.actions.map(({ label, action, type="primary", disabled=false, url }, i) =>
+                    url === undefined ?
+                      <button className={ `btn btn-outline-${ type }` }
+                        onClick={ e => this.onAction(e, action) }
+                        key={ i }
+                        disabled={ disabled }>
+                        { label }
+                      </button>
+                    :
+                      <div className={ "link-container" + (disabled ? " link-disabled" : "") }>
+                        <Link className={ `btn btn-outline-${ type } ${ disabled ? " disabled" : "" }` }
+                          to={ url || "#" }
+                          key={ i }>
+                          { label }
+                        </Link>
+                      </div>
+                  ) // END this.props.actions.map
                 }
               </div>
             }
