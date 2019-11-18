@@ -10,7 +10,7 @@ import get from "lodash.get"
 import * as d3selection from "d3-selection"
 
 const DraggableContainer = styled.div`
-	position: fixed;
+	position: absolute;
 	z-index: 500;
 	background-color: ${ props => props.theme.sidePanelBg };
 `
@@ -102,11 +102,14 @@ export default class DraggableModal extends React.Component {
 			.on("mousedown.avl", () => this.startDragOrResize("resizing"), { bubbles: false });
 
     this.setState((state, props) => {
+			if (!this.container) return null;
+
       if (this.resizeOnIdChange()) return null;
 
       const [width, height] = state.size,
-  			clientWidth = document.body.clientWidth,
-  			clientHeight = document.body.clientHeight;
+				parent = this.container.parentElement,
+  			clientWidth = parent.clientWidth,
+  			clientHeight = parent.clientHeight;
 
       if (typeof props.startPos === "string") {
         switch (props.startPos) {
@@ -143,8 +146,9 @@ export default class DraggableModal extends React.Component {
       let pos = [...this.state.pos];
 
       const [width, height] = size,
-  			clientWidth = document.body.clientWidth,
-  			clientHeight = document.body.clientHeight;
+				parent = this.container.parentElement,
+  			clientWidth = parent.clientWidth,
+  			clientHeight = parent.clientHeight;
 
       if (typeof startPos === "string") {
         switch (startPos) {
