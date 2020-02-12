@@ -202,6 +202,7 @@ class Modal extends React.Component {
             <Loading width="100px" height="100px"/>
           </LoadingContainer>
         }
+
         <div className="body">
           <div className="content">
             { !show && !persistChildren ? null :
