@@ -181,7 +181,11 @@ class Modal extends React.Component {
           this.onHide();
         }
       })
-      .catch(e => Boolean(this.props.onReject) && this.onReject(e));
+      .catch(e => {
+        console.log("<AvlModal.onAction> ERROR:", e);
+        this.setState({ loading: false });
+        Boolean(this.props.onReject) && this.onReject(e)
+      });
   }
   onResolve(res) {
     this.setState({ onResolve: { res } });
@@ -191,10 +195,12 @@ class Modal extends React.Component {
   }
   render() {
     const { hide } = this.state,
-      { show, persistChildren } = this.props;
+      { show, persistChildren, actions } = this.props;
+
+    const filtered = actions.filter(a => a.show !== false);
     return (
       <ModalContainer className={ classnames({ show, hide }) }
-        numActions={ this.props.actions.length }
+        numActions={ filtered.length }
         hasChildren={ Boolean(this.props.children) }>
 
         { !this.state.loading ? null :
@@ -216,10 +222,10 @@ class Modal extends React.Component {
               onClick={ e => this.onHide() }>
               { this.props.closeLabel }
             </button>
-            { !this.props.actions.length || Boolean(this.state.onResolve) || Boolean(this.state.onReject) ? null :
+            { !filtered.length || Boolean(this.state.onResolve) || Boolean(this.state.onReject) ? null :
               <div className="user-actions">
                 {
-                  this.props.actions.map(({ label, action, type="primary", disabled=false, url }, i) =>
+                  filtered.map(({ label, action, type="primary", disabled=false, url }, i) =>
                     url === undefined ?
                       <button className={ `btn btn-outline-${ type }` }
                         onClick={ e => this.onAction(e, action) }
