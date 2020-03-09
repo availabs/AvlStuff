@@ -42,11 +42,9 @@ const dropOut = keyframes`
   }
 `
 
-const ModalContainer = styled.div`
-  position: fixed!important;
+const ModalContainerBase = styled.div`
+  position: fixed;
   top: 0px;
-  right: 0px;
-  bottom: 0px;
   left: 0px;
   z-index: 100000;
   background-color: rgba(0, 0, 0, 0.5);
@@ -116,6 +114,15 @@ const ModalContainer = styled.div`
   }
 `
 
+const ModalContainer = styled(ModalContainerBase)`
+  right: 0px;
+  bottom: 0px;
+`
+const PositionedModalContainer = styled(ModalContainerBase)`
+  padding 0px 50px;
+  bottom: 0px;
+`
+
 const LoadingContainer = styled.div`
   width: 100%;
   height: 100%;
@@ -138,7 +145,8 @@ class Modal extends React.Component {
     onResolve: null,
     onResolveHide: () => {},
     onReject: null,
-    onRejectHide: () => {}
+    onRejectHide: () => {},
+    usePositioned: false
   }
   state = {
     hide: false,
@@ -198,8 +206,12 @@ class Modal extends React.Component {
       { show, persistChildren, actions } = this.props;
 
     const filtered = actions.filter(a => a.show !== false);
+
+    const CONTAINER = this.props.usePositioned ? PositionedModalContainer : ModalContainer;
+
     return (
-      <ModalContainer className={ classnames({ show, hide }) }
+      <CONTAINER
+        className={ classnames({ show, hide }) }
         numActions={ filtered.length }
         hasChildren={ Boolean(this.props.children) }>
 
@@ -248,7 +260,7 @@ class Modal extends React.Component {
           </div>
         </div>
 
-      </ModalContainer>
+      </CONTAINER>
     )
   }
 }
