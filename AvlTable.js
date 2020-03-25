@@ -6,7 +6,7 @@ import get from "lodash.get"
 import * as d3array from "d3-array";
 import { format } from "d3-format"
 
-import { Input, Tooltip } from "components/common/styled-components"
+import { Input } from "components/common/styled-components"
 import ItemSelector from 'components/common/item-selector/item-selector';
 
 let FILTER_ID = 0;
@@ -264,8 +264,6 @@ export default class AvlTable extends React.Component {
 	getData() {
 		let data = this.state.filters.reduce((data, filter) => filter(data), [...this.props.data]);
 
-		const isN = n => !isNaN(+n);
-
 		const { sortKeys } = this.state;
 
 		data = hierSort(data, sortKeys);
@@ -441,7 +439,7 @@ const Button = styled.button`
 	}
 `
 
-const _NavigationBar = styled.div`
+const StyledNavigationBar = styled.div`
 	display: flex;
 	flex-direction: column;
 	width: 100%;
@@ -496,7 +494,7 @@ const getPageSpread = (page, maxPage, pageSpread) => {
 }
 const numberFormat = format(",d");
 
-const _FilterItem = styled.div`
+const StyledFilterItem = styled.div`
 	padding: 2px 2px 2px 10px;
 	display: flex;
 	border: 2px solid ${ props => props.theme.textColor };
@@ -511,12 +509,12 @@ const _FilterItem = styled.div`
 	}
 `
 const FilterItem = ({ display, remove }) =>
-	<_FilterItem>
+	<StyledFilterItem>
 		<div>{ display }</div>
 		<Button onClick={ remove }>
 			<span className="fa fa-times"/>
 		</Button>
-	</_FilterItem>
+	</StyledFilterItem>
 
 const NavigationBar = ({ prevPage,
 													nextPage,
@@ -539,7 +537,7 @@ const NavigationBar = ({ prevPage,
 													title,
 													showHelp
 												}) =>
-	<_NavigationBar>
+	<StyledNavigationBar>
 
 		<div>
 			<div style={ { fontSize: "1rem", fontWeight: "bold", lineHeight: "23px" } }>
@@ -644,7 +642,7 @@ const NavigationBar = ({ prevPage,
 			</div>
 		</div>
 
-	</_NavigationBar>
+	</StyledNavigationBar>
 
 const TableHelp = () =>
 	<div className="button-dropdown">
