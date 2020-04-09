@@ -265,10 +265,12 @@ export default class AvlTable extends React.Component {
 	}
 
     getData() {
-        let data = this.state.filters.length ? this.state.filters.reduce((data, filter) => {
-            data.push(...filter(this.props.data));
-            return data;
-        }, []) : this.props.data;
+        let data = (this.props.isMulti || true) ?
+						this.state.filters.length ? this.state.filters.reduce((data, filter) => {
+						data.push(...filter(this.props.data));
+						return data;
+					}, []) : this.props.data :
+			this.state.filters.reduce((data, filter) => filter(data), [...this.props.data]);
         const  {sortKeys} = this.state;
 
         data = hierSort(data, sortKeys);
@@ -336,6 +338,8 @@ export default class AvlTable extends React.Component {
 					nextPage={ () => this.nextPage() }
 					setPage={ p => this.setPage(p) }
 					searchKeys={ keys }
+					data={ this.props.data }
+					isMulti={ this.props.isMulti || true }
 					searchKey={ searchKey }
 					setSearchKey={ key => this.setSearchKey(key) }
 					searchString={ searchString }
@@ -562,7 +566,8 @@ const NavigationBar = ({
                            downloadFiltered,
                            downloadUnfiltered,
                            title,
-                           showHelp
+                           showHelp,
+						   isMulti,
                        }) =>
     <StyledNavigationBar>
 
@@ -586,34 +591,51 @@ const NavigationBar = ({
 			</div>
 		</div>
 
-		<div style={ { marginTop: "5px", height: '40px' } }>
-			<form style={ { display: "flex", width: "100%" } }
-				onSubmit={ e => { e.preventDefault(); searchKey && searchString && addFilter() } }>
-					<div style={ { width: "40%" } }>
-						<ItemSelector
-							placeholder="Select a filter key..."
-							selectedItems={ searchKey }
-							multiSelect={ false }
-							searchable={ false }
-							displayOption={ d => d }
-							getOptionValue={ d => d }
-							onChange={ setSearchKey }
-							options={ searchKeys }/>
-					</div>
-					<div style={ { width: "40%" } }>
-						<Input type="text" value={ searchString }
-							disabled={ !Boolean(searchKey) }
-							onChange={ ({ target: { value } }) => setSearchString(value) }
-							placeholder="filter..."/>
-					</div>
-					<div style={ { width: "20%", display: "flex" } }>
-						<Button onClick={ addFilter } style={ { width: "100%" } }
-							disabled={ !searchKey || !searchString }>
-							Add Filter
-						</Button>
-					</div>
-			</form>
-		</div>
+        <div style={{marginTop: "5px", height: '40px'}}>
+            <form style={{display: "flex", width: "100%"}}
+                  onSubmit={e => {
+                      e.preventDefault();
+                      searchKey && searchString && addFilter()
+                  }}>
+                <div style={{width: "40%"}}>
+                    <ItemSelector
+                        placeholder="Select a filter key..."
+                        selectedItems={searchKey}
+                        multiSelect={false}
+                        searchable={false}
+                        displayOption={d => d}
+                        getOptionValue={d => d}
+                        onChange={setSearchKey}
+                        options={searchKeys}/>
+                </div>
+                <div style={{width: "40%"}}>
+                    {(isMulti || true) ?
+                        <_MultiSelectFilter>
+                            {console.log('data and key', searchKey, data)}
+                            <MultiSelectFilter
+                                filter={{
+                                    domain: searchKey ? _.uniqBy(data, searchKey).map(d => d[searchKey]).filter(f => f) : [],
+                                    value: searchString ? searchString.split(';') : []//this.props.state[this.props.title] ? this.props.state[this.props.title] : this.props.defaultValue ? this.props.defaultValue : []
+                                }}
+                                setFilter={(e) => {
+                                    setSearchString(e.join(';'));
+                                }}
+                            />
+                        </_MultiSelectFilter> :
+                        <Input type="text" value={searchString}
+                               disabled={!Boolean(searchKey)}
+                               onChange={({target: {value}}) => setSearchString(value)}
+                               placeholder="filter..."/>
+                    }
+                </div>
+                <div style={{width: "20%", display: "flex", paddingBottom: '13px'}}>
+                    <Button onClick={addFilter} style={{ width: "100%"}}
+                            disabled={!searchKey || !searchString}>
+                        Add Filter
+                    </Button>
+                </div>
+            </form>
+        </div>
 
 		{ !filters.length ? null :
 			<div style={ { display: "flex" } }>
