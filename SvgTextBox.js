@@ -109,7 +109,7 @@ export default class SvgTextBox extends React.Component {
     const {
         top,
         right,
-        bottom,
+        // bottom,
         left
       } = this.getPadding(),
 
