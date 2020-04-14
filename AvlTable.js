@@ -265,7 +265,7 @@ export default class AvlTable extends React.Component {
 	}
 
     getData() {
-        let data = (this.props.isMulti || true) ?
+        let data = (this.props.isMulti) ?
 						this.state.filters.length ? this.state.filters.reduce((data, filter) => {
 						data.push(...filter(this.props.data));
 						return data;
@@ -315,7 +315,7 @@ export default class AvlTable extends React.Component {
 
 	render() {
 		let [keys, data] = this.getKeysAndData();
-
+		keys = keys.filter(key => this.props.expandable ? !this.props.expandable.includes(key) : true)
 		let { page, searchKey, searchString, sortKeys } = this.state;
 		const keyMap = sortKeys.reduce((a, c, i) => ({ ...a, [c.key]: { dir: c.dir, i } }), {});
 
@@ -339,7 +339,7 @@ export default class AvlTable extends React.Component {
 					setPage={ p => this.setPage(p) }
 					searchKeys={ keys }
 					data={ this.props.data }
-					isMulti={ this.props.isMulti || true }
+					isMulti={ this.props.isMulti }
 					searchKey={ searchKey }
 					setSearchKey={ key => this.setSearchKey(key) }
 					searchString={ searchString }
@@ -373,9 +373,24 @@ export default class AvlTable extends React.Component {
 						<tbody>
 							{
 								data.map((row, i) =>
-									<tr key={ i }>
-										{ keys.map(key => <td key={ key }>{ row[key] }</td>) }
-									</tr>
+									<React.Fragment>
+										<tr key={ i } onClick={(e) => {
+											if (document.getElementById(`expandable${i}`)){
+												document.getElementById(`expandable${i}`).style.display =
+													document.getElementById(`expandable${i}`).style.display === 'none' ? 'table-row' : 'none'
+											}
+										}}>
+											{ keys.map(key => <td key={ key }>{ row[key] }</td>) }
+										</tr>
+										{ this.props.expandable.map(key =>
+											<tr id={`expandable${i}`} style={{display: 'none', backgroundColor: 'rgba(0,0,0,0.06)'}}>
+												<td
+													colSpan={keys.length}
+													key={ key }>
+													{ row[key] }
+												</td>
+											</tr>) }
+									</React.Fragment>
 								)
 							}
 						</tbody>
@@ -609,9 +624,8 @@ const NavigationBar = ({
                         options={searchKeys}/>
                 </div>
                 <div style={{width: "40%"}}>
-                    {(isMulti || true) ?
+                    {(isMulti) ?
                         <_MultiSelectFilter>
-                            {console.log('data and key', searchKey, data)}
                             <MultiSelectFilter
                                 filter={{
                                     domain: searchKey ? _.uniqBy(data, searchKey).map(d => d[searchKey]).filter(f => f) : [],
