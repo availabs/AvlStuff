@@ -4,6 +4,7 @@ import classnames from "classnames"
 import styled from "styled-components"
 
 const StyledTab = styled.div`
+  position: relative;
   padding: 2px 10px;
   margin-bottom: 5px;
   background-color: ${ props => props.theme.sidePanelHeaderBg };
@@ -41,7 +42,11 @@ export const Tab = ({ label, children, open, showChildren, ...rest }) =>
       { label }
     </div>
     { !showChildren ? null :
-      children
+      <div style={ { height: "calc(100% - 22px)", display: "flex", width: "100%" } }>
+        <div style={ { height: "100%", width: "100%", position: "relative" } }>
+          { children }
+        </div>
+      </div>
     }
   </StyledTab>
 
