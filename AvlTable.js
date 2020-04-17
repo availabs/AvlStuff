@@ -138,7 +138,8 @@ export default class AvlTable extends React.Component {
 		pageSpread: 2,
 		downloadedFileName: "data.csv",
 		title: "",
-		showHelp: false
+		showHelp: false,
+		expandable: []
 	}
 
 	state = {
@@ -326,6 +327,7 @@ export default class AvlTable extends React.Component {
 		page = Math.min(maxPage, page);
 
 		data = data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+console.log("???", keys, data, this.props.expandable)
 		return (
 			<DivContainer>
 
@@ -371,25 +373,29 @@ export default class AvlTable extends React.Component {
 							</tr>
 						</thead>
 						<tbody>
-							{
-								data.map((row, i) =>
-									<React.Fragment>
-										<tr key={ i } onClick={(e) => {
-											if (document.getElementById(`expandable${i}`)){
-												document.getElementById(`expandable${i}`).style.display =
-													document.getElementById(`expandable${i}`).style.display === 'none' ? 'table-row' : 'none'
+							{ data.map((row, i) =>
+									<React.Fragment key={ i }>
+										<tr key={ `row-${ i }` } onClick={ e => {
+											const el = document.getElementById(`expandable-${ i }`);
+											if (el) {
+												const display = el.style.display;
+												el.style.display = display === "none" ? "table-row" : "none";
 											}
-										}}>
+										} }>
 											{ keys.map(key => <td key={ key }>{ row[key] }</td>) }
 										</tr>
 										{ this.props.expandable.map(key =>
-											<tr id={`expandable${i}`} style={{display: 'none', backgroundColor: 'rgba(0,0,0,0.06)'}}>
-												<td
-													colSpan={keys.length}
-													key={ key }>
-													{ row[key] }
-												</td>
-											</tr>) }
+												<tr key={ key } id={`expandable-${ i }`}
+													style={ {
+														display: 'none',
+														backgroundColor: 'rgba(0,0,0,0.06)'
+													} }>
+													<td colSpan={ keys.length }>
+														{ row[key] }
+													</td>
+												</tr>
+											)
+										}
 									</React.Fragment>
 								)
 							}
@@ -534,7 +540,7 @@ const StyledFilterItem = styled.div`
 `
 
 const _MultiSelectFilter = styled.div`
-	
+
 	/*padding: 2px 2px 2px 10px;*/
 	margin: 0px !important;
 	display: flex;

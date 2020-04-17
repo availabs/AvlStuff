@@ -4,6 +4,7 @@ import classnames from "classnames"
 import styled from "styled-components"
 
 const StyledTab = styled.div`
+  ${ props => props.theme.scrollBar };
   position: relative;
   padding: 2px 10px;
   margin-bottom: 5px;
