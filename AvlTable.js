@@ -1,13 +1,16 @@
 import React from "react"
 
 import styled from "styled-components"
+import _ from "lodash"
 import get from "lodash.get"
 
 import * as d3array from "d3-array";
 import { format } from "d3-format"
 
-import { Input, Tooltip } from "components/common/styled-components"
+import { Input } from "components/common/styled-components"
 import ItemSelector from 'components/common/item-selector/item-selector';
+import MultiSelectFilter from 'components/filters/multi-select-filter.js'
+
 
 let FILTER_ID = 0;
 const getFilterId = () => `filter-${ ++FILTER_ID }`;
@@ -135,7 +138,8 @@ export default class AvlTable extends React.Component {
 		pageSpread: 2,
 		downloadedFileName: "data",
 		title: "",
-		showHelp: false
+		showHelp: false,
+		expandable: []
 	}
 
 	state = {
@@ -261,17 +265,19 @@ export default class AvlTable extends React.Component {
 		return keys;
 	}
 
-	getData() {
-		let data = this.state.filters.reduce((data, filter) => filter(data), [...this.props.data]);
+    getData() {
+        let data = (this.props.isMulti) ?
+						this.state.filters.length ? this.state.filters.reduce((data, filter) => {
+						data.push(...filter(this.props.data));
+						return data;
+					}, []) : this.props.data :
+			this.state.filters.reduce((data, filter) => filter(data), [...this.props.data]);
+        const  {sortKeys} = this.state;
 
-		const isN = n => !isNaN(+n);
+        data = hierSort(data, sortKeys);
 
-		const { sortKeys } = this.state;
-
-		data = hierSort(data, sortKeys);
-
-		return data;
-	}
+        return data;
+    }
 
 	getKeysAndData() {
 		return [this.getKeys(), this.getData()];
@@ -310,7 +316,7 @@ export default class AvlTable extends React.Component {
 
 	render() {
 		let [keys, data] = this.getKeysAndData();
-
+		keys = keys.filter(key => this.props.expandable ? !this.props.expandable.includes(key) : true)
 		let { page, searchKey, searchString, sortKeys } = this.state;
 		const keyMap = sortKeys.reduce((a, c, i) => ({ ...a, [c.key]: { dir: c.dir, i } }), {});
 
@@ -321,6 +327,7 @@ export default class AvlTable extends React.Component {
 		page = Math.min(maxPage, page);
 
 		data = data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+console.log("???", keys, data, this.props.expandable)
 		return (
 			<DivContainer>
 
@@ -333,6 +340,8 @@ export default class AvlTable extends React.Component {
 					nextPage={ () => this.nextPage() }
 					setPage={ p => this.setPage(p) }
 					searchKeys={ keys }
+					data={ this.props.data }
+					isMulti={ this.props.isMulti }
 					searchKey={ searchKey }
 					setSearchKey={ key => this.setSearchKey(key) }
 					searchString={ searchString }
@@ -364,11 +373,30 @@ export default class AvlTable extends React.Component {
 							</tr>
 						</thead>
 						<tbody>
-							{
-								data.map((row, i) =>
-									<tr key={ i }>
-										{ keys.map(key => <td key={ key }>{ row[key] }</td>) }
-									</tr>
+							{ data.map((row, i) =>
+									<React.Fragment key={ i }>
+										<tr key={ `row-${ i }` } onClick={ e => {
+											const el = document.getElementById(`expandable-${ i }`);
+											if (el) {
+												const display = el.style.display;
+												el.style.display = display === "none" ? "table-row" : "none";
+											}
+										} }>
+											{ keys.map(key => <td key={ key }>{ row[key] }</td>) }
+										</tr>
+										{ this.props.expandable.map(key =>
+												<tr key={ key } id={`expandable-${ i }`}
+													style={ {
+														display: 'none',
+														backgroundColor: 'rgba(0,0,0,0.06)'
+													} }>
+													<td colSpan={ keys.length }>
+														{ row[key] }
+													</td>
+												</tr>
+											)
+										}
+									</React.Fragment>
 								)
 							}
 						</tbody>
@@ -441,7 +469,7 @@ const Button = styled.button`
 	}
 `
 
-const _NavigationBar = styled.div`
+const StyledNavigationBar = styled.div`
 	display: flex;
 	flex-direction: column;
 	width: 100%;
@@ -496,7 +524,7 @@ const getPageSpread = (page, maxPage, pageSpread) => {
 }
 const numberFormat = format(",d");
 
-const _FilterItem = styled.div`
+const StyledFilterItem = styled.div`
 	padding: 2px 2px 2px 10px;
 	display: flex;
 	border: 2px solid ${ props => props.theme.textColor };
@@ -510,36 +538,59 @@ const _FilterItem = styled.div`
 		padding-right: 5px;
 	}
 `
-const FilterItem = ({ display, remove }) =>
-	<_FilterItem>
-		<div>{ display }</div>
-		<Button onClick={ remove }>
-			<span className="fa fa-times"/>
-		</Button>
-	</_FilterItem>
 
-const NavigationBar = ({ prevPage,
-													nextPage,
-													page,
-													maxPage,
-													setPage,
-													length,
-													searchKeys,
-													searchKey,
-												 	setSearchKey,
-													setSearchString,
-													searchString,
-													rowsPerPage,
-													pageSpread,
-													addFilter,
-													removeFilter,
-													filters,
-													downloadFiltered,
-													downloadUnfiltered,
-													title,
-													showHelp
-												}) =>
-	<_NavigationBar>
+const _MultiSelectFilter = styled.div`
+
+	/*padding: 2px 2px 2px 10px;*/
+	margin: 0px !important;
+	display: flex;
+	border: 2px /*solid*/ ${props => props.theme.textColor};
+	border-radius: 4px;
+
+	:hover {
+		border-color: ${props => props.theme.textColorHl};
+	}
+
+	> div:first-child {
+		padding-right: 0px;
+	}
+	>div {
+		width: 100%;
+	}
+`
+const FilterItem = ({display, remove}) =>
+    <StyledFilterItem>
+        <div>{display}</div>
+        <Button onClick={remove}>
+            <span className="fa fa-times"/>
+        </Button>
+    </StyledFilterItem>
+
+const NavigationBar = ({
+                           prevPage,
+                           nextPage,
+                           page,
+                           maxPage,
+                           setPage,
+                           length,
+                           searchKeys,
+                           searchKey,
+                           data,
+                           setSearchKey,
+                           setSearchString,
+                           searchString,
+                           rowsPerPage,
+                           pageSpread,
+                           addFilter,
+                           removeFilter,
+                           filters,
+                           downloadFiltered,
+                           downloadUnfiltered,
+                           title,
+                           showHelp,
+						   isMulti,
+                       }) =>
+    <StyledNavigationBar>
 
 		<div>
 			<div style={ { fontSize: "1rem", fontWeight: "bold", lineHeight: "23px" } }>
@@ -561,34 +612,50 @@ const NavigationBar = ({ prevPage,
 			</div>
 		</div>
 
-		<div style={ { marginTop: "5px" } }>
-			<form style={ { display: "flex", width: "100%" } }
-				onSubmit={ e => { e.preventDefault(); searchKey && searchString && addFilter() } }>
-					<div style={ { width: "40%" } }>
-						<ItemSelector
-							placeholder="Select a filter key..."
-							selectedItems={ searchKey }
-							multiSelect={ false }
-							searchable={ false }
-							displayOption={ d => d }
-							getOptionValue={ d => d }
-							onChange={ setSearchKey }
-							options={ searchKeys }/>
-					</div>
-					<div style={ { width: "40%" } }>
-						<Input type="text" value={ searchString }
-							disabled={ !Boolean(searchKey) }
-							onChange={ ({ target: { value } }) => setSearchString(value) }
-							placeholder="filter..."/>
-					</div>
-					<div style={ { width: "20%", display: "flex" } }>
-						<Button onClick={ addFilter } style={ { height: "100%", width: "100%" } }
-							disabled={ !searchKey || !searchString }>
-							Add Filter
-						</Button>
-					</div>
-			</form>
-		</div>
+        <div style={{marginTop: "5px", height: '40px'}}>
+            <form style={{display: "flex", width: "100%"}}
+                  onSubmit={e => {
+                      e.preventDefault();
+                      searchKey && searchString && addFilter()
+                  }}>
+                <div style={{width: "40%"}}>
+                    <ItemSelector
+                        placeholder="Select a filter key..."
+                        selectedItems={searchKey}
+                        multiSelect={false}
+                        searchable={false}
+                        displayOption={d => d}
+                        getOptionValue={d => d}
+                        onChange={setSearchKey}
+                        options={searchKeys}/>
+                </div>
+                <div style={{width: "40%"}}>
+                    {(isMulti) ?
+                        <_MultiSelectFilter>
+                            <MultiSelectFilter
+                                filter={{
+                                    domain: searchKey ? _.uniqBy(data, searchKey).map(d => d[searchKey]).filter(f => f) : [],
+                                    value: searchString ? searchString.split(';') : []//this.props.state[this.props.title] ? this.props.state[this.props.title] : this.props.defaultValue ? this.props.defaultValue : []
+                                }}
+                                setFilter={(e) => {
+                                    setSearchString(e.join(';'));
+                                }}
+                            />
+                        </_MultiSelectFilter> :
+                        <Input type="text" value={searchString}
+                               disabled={!Boolean(searchKey)}
+                               onChange={({target: {value}}) => setSearchString(value)}
+                               placeholder="filter..."/>
+                    }
+                </div>
+                <div style={{width: "20%", display: "flex", paddingBottom: '13px'}}>
+                    <Button onClick={addFilter} style={{ width: "100%"}}
+                            disabled={!searchKey || !searchString}>
+                        Add Filter
+                    </Button>
+                </div>
+            </form>
+        </div>
 
 		{ !filters.length ? null :
 			<div style={ { display: "flex" } }>
@@ -644,7 +711,7 @@ const NavigationBar = ({ prevPage,
 			</div>
 		</div>
 
-	</_NavigationBar>
+    </StyledNavigationBar>
 
 const TableHelp = () =>
 	<div className="button-dropdown">
