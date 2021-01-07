@@ -246,10 +246,9 @@ class Modal extends React.Component {
                         { label }
                       </button>
                     :
-                      <div className={ "link-container" + (disabled ? " link-disabled" : "") }>
+                      <div className={ "link-container" + (disabled ? " link-disabled" : "") } key={ i }>
                         <Link className={ `btn btn-outline-${ type } ${ disabled ? " disabled" : "" }` }
-                          to={ url || "#" }
-                          key={ i }>
+                          to={ url || "#" }>
                           { label }
                         </Link>
                       </div>

@@ -19,9 +19,7 @@ class PromiseComponent extends React.Component {
     this.MOUNTED = false;
   }
   render() {
-    return (
-      <div>{ this.state.data }</div>
-    )
+    return <div>{ this.state.data }</div>;
   }
 }
 export const iPromise = (promise, id = ++UNIQUE_ID) => {
