@@ -133,7 +133,7 @@ export default class AvlTable extends React.Component {
 		keys: [],
 		rowsPerPage: 10,
 		pageSpread: 2,
-		downloadedFileName: "data.csv",
+		downloadedFileName: "data",
 		title: "",
 		showHelp: false
 	}
@@ -300,7 +300,7 @@ export default class AvlTable extends React.Component {
 		if (link.download !== undefined) {
 			const url = URL.createObjectURL(blob);
 			link.setAttribute('href', url);
-			link.setAttribute('download', this.props.downloadedFileName);
+			link.setAttribute('download', `${ this.props.downloadedFileName }.csv`);
 			link.style.visibility = 'hidden';
 			document.body.appendChild(link);
 			link.click();
