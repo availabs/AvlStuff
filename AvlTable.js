@@ -135,7 +135,9 @@ export default class AvlTable extends React.Component {
 		pageSpread: 2,
 		downloadedFileName: "data.csv",
 		title: "",
-		showHelp: false
+		showHelp: false,
+		hideFilters: false,
+		hideDownload: false
 	}
 
 	state = {
@@ -343,7 +345,9 @@ export default class AvlTable extends React.Component {
 					downloadFiltered={ () => this.downloadAsCsv(true) }
 					downloadUnfiltered={ () => this.downloadAsCsv(false) }
 					title={ this.props.title }
-					showHelp={ this.props.showHelp }/>
+					showHelp={ this.props.showHelp }
+					hideFilters={ this.props.hideFilters }
+					hideDownload={ this.props.hideDownload }/>
 
 				<TableContainer>
 					<table className="table table-sm">
@@ -402,7 +406,7 @@ const TH = styled.th`
 	}
 `
 
-const Button = styled.button`
+export const Button = styled.button`
 	background-color: ${ props => props.theme.primaryBtnBgd };
 	color: ${ props => props.theme.primaryBtnColor };
 	border-radius: 4px;
@@ -410,6 +414,9 @@ const Button = styled.button`
 	cursor: pointer;
 	font-weight: 400;
 	position: relative;
+	display: inline-flex;
+	align-items: center;
+	padding: 4px 6px;
 
 	:hover {
 		background-color: ${ props => props.theme.primaryBtnBgdHover };
@@ -537,58 +544,66 @@ const NavigationBar = ({ prevPage,
 													downloadFiltered,
 													downloadUnfiltered,
 													title,
-													showHelp
+													showHelp,
+													hideFilters,
+													hideDownload
 												}) =>
 	<_NavigationBar>
 
 		<div>
-			<div style={ { fontSize: "1rem", fontWeight: "bold", lineHeight: "23px" } }>
-				{ title }
-			</div>
-			<div>
-				<Button onClick={ downloadFiltered }>
-					Download Filtered Data
-				</Button>
-				<Button onClick={ downloadUnfiltered } style={ { marginLeft: "5px" } }>
-					Download Unfiltered Data
-				</Button>
-				{ !showHelp ? null :
-					<Button style={ { marginLeft: "5px" } }>
-						<span className="fa fa-question"/>
-						<TableHelp />
+			{ !title ? null :
+				<div style={ { fontSize: "1rem", fontWeight: "bold", lineHeight: "23px" } }>
+					{ title }
+				</div>
+			}
+			{ hideDownload ? null :
+				<div>
+					<Button onClick={ downloadFiltered }>
+						Download Filtered Data
 					</Button>
-				}
-			</div>
+					<Button onClick={ downloadUnfiltered } style={ { marginLeft: "5px" } }>
+						Download Unfiltered Data
+					</Button>
+					{ !showHelp ? null :
+						<Button style={ { marginLeft: "5px" } }>
+							<span className="fa fa-question"/>
+							<TableHelp />
+						</Button>
+					}
+				</div>
+			}
 		</div>
 
-		<div style={ { marginTop: "5px" } }>
-			<form style={ { display: "flex", width: "100%" } }
-				onSubmit={ e => { e.preventDefault(); searchKey && searchString && addFilter() } }>
-					<div style={ { width: "40%" } }>
-						<ItemSelector
-							placeholder="Select a filter key..."
-							selectedItems={ searchKey }
-							multiSelect={ false }
-							searchable={ false }
-							displayOption={ d => d }
-							getOptionValue={ d => d }
-							onChange={ setSearchKey }
-							options={ searchKeys }/>
-					</div>
-					<div style={ { width: "40%" } }>
-						<Input type="text" value={ searchString }
-							disabled={ !Boolean(searchKey) }
-							onChange={ ({ target: { value } }) => setSearchString(value) }
-							placeholder="filter..."/>
-					</div>
-					<div style={ { width: "20%", display: "flex" } }>
-						<Button onClick={ addFilter } style={ { height: "100%", width: "100%" } }
-							disabled={ !searchKey || !searchString }>
-							Add Filter
-						</Button>
-					</div>
-			</form>
-		</div>
+		{ hideFilters ? null :
+			<div style={ { marginTop: "5px" } }>
+				<form style={ { display: "flex", width: "100%" } }
+					onSubmit={ e => { e.preventDefault(); searchKey && searchString && addFilter() } }>
+						<div style={ { width: "40%" } }>
+							<ItemSelector
+								placeholder="Select a filter key..."
+								selectedItems={ searchKey }
+								multiSelect={ false }
+								searchable={ false }
+								displayOption={ d => d }
+								getOptionValue={ d => d }
+								onChange={ setSearchKey }
+								options={ searchKeys }/>
+						</div>
+						<div style={ { width: "40%" } }>
+							<Input type="text" value={ searchString }
+								disabled={ !Boolean(searchKey) }
+								onChange={ ({ target: { value } }) => setSearchString(value) }
+								placeholder="filter..."/>
+						</div>
+						<div style={ { width: "20%", display: "flex" } }>
+							<Button onClick={ addFilter } style={ { height: "100%", width: "100%" } }
+								disabled={ !searchKey || !searchString }>
+								Add Filter
+							</Button>
+						</div>
+				</form>
+			</div>
+		}
 
 		{ !filters.length ? null :
 			<div style={ { display: "flex" } }>
