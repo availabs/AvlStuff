@@ -139,8 +139,7 @@ export default class AvlTable extends React.Component {
 		downloadedFileName: "data",
 		title: "",
 		showHelp: false,
-		hideFilters: false,
-		hideDownload: false
+		expandable: []
 	}
 
 	state = {
@@ -353,9 +352,7 @@ export default class AvlTable extends React.Component {
 					downloadFiltered={ () => this.downloadAsCsv(true) }
 					downloadUnfiltered={ () => this.downloadAsCsv(false) }
 					title={ this.props.title }
-					showHelp={ this.props.showHelp }
-					hideFilters={ this.props.hideFilters }
-					hideDownload={ this.props.hideDownload }/>
+					showHelp={ this.props.showHelp }/>
 
 				<TableContainer>
 					<table className="table table-sm">
@@ -443,7 +440,7 @@ export const Button = styled.button`
 	position: relative;
 	display: inline-flex;
 	align-items: center;
-	padding: 4px 6px;
+	justify-content: center;
 
 	:hover {
 		background-color: ${ props => props.theme.primaryBtnBgdHover };
@@ -544,7 +541,6 @@ const StyledFilterItem = styled.div`
 		padding-right: 5px;
 	}
 `
-<<<<<<< HEAD
 
 const _MultiSelectFilter = styled.div`
 
@@ -598,53 +594,23 @@ const NavigationBar = ({
 						   isMulti,
                        }) =>
     <StyledNavigationBar>
-=======
-const FilterItem = ({ display, remove }) =>
-	<_FilterItem>
-		<div>{ display }</div>
-		<Button onClick={ remove }>
-			<span className="fa fa-times"/>
-		</Button>
-	</_FilterItem>
-
-const NavigationBar = ({ prevPage,
-													nextPage,
-													page,
-													maxPage,
-													setPage,
-													length,
-													searchKeys,
-													searchKey,
-												 	setSearchKey,
-													setSearchString,
-													searchString,
-													rowsPerPage,
-													pageSpread,
-													addFilter,
-													removeFilter,
-													filters,
-													downloadFiltered,
-													downloadUnfiltered,
-													title,
-													showHelp,
-													hideFilters,
-													hideDownload
-												}) =>
-	<_NavigationBar>
->>>>>>> temp
 
 		<div>
-			{ !title ? null :
-				<div style={ { fontSize: "1rem", fontWeight: "bold", lineHeight: "23px" } }>
-					{ title }
-				</div>
-			}
-			{ hideDownload ? null :
-				<div>
-					<Button onClick={ downloadFiltered }>
-						Download Filtered Data
+			<div style={ { fontSize: "1rem", fontWeight: "bold", lineHeight: "23px" } }>
+				{ title }
+			</div>
+			<div>
+				<Button onClick={ downloadFiltered }>
+					Download Filtered Data
+				</Button>
+				<Button onClick={ downloadUnfiltered } style={ { marginLeft: "5px" } }>
+					Download Unfiltered Data
+				</Button>
+				{ !showHelp ? null :
+					<Button style={ { marginLeft: "5px" } }>
+						<span className="fa fa-question"/>
+						<TableHelp />
 					</Button>
-<<<<<<< HEAD
 				}
 			</div>
 		</div>
@@ -693,51 +659,6 @@ const NavigationBar = ({ prevPage,
                 </div>
             </form>
         </div>
-=======
-					<Button onClick={ downloadUnfiltered } style={ { marginLeft: "5px" } }>
-						Download Unfiltered Data
-					</Button>
-					{ !showHelp ? null :
-						<Button style={ { marginLeft: "5px" } }>
-							<span className="fa fa-question"/>
-							<TableHelp />
-						</Button>
-					}
-				</div>
-			}
-		</div>
->>>>>>> temp
-
-		{ hideFilters ? null :
-			<div style={ { marginTop: "5px" } }>
-				<form style={ { display: "flex", width: "100%" } }
-					onSubmit={ e => { e.preventDefault(); searchKey && searchString && addFilter() } }>
-						<div style={ { width: "40%" } }>
-							<ItemSelector
-								placeholder="Select a filter key..."
-								selectedItems={ searchKey }
-								multiSelect={ false }
-								searchable={ false }
-								displayOption={ d => d }
-								getOptionValue={ d => d }
-								onChange={ setSearchKey }
-								options={ searchKeys }/>
-						</div>
-						<div style={ { width: "40%" } }>
-							<Input type="text" value={ searchString }
-								disabled={ !Boolean(searchKey) }
-								onChange={ ({ target: { value } }) => setSearchString(value) }
-								placeholder="filter..."/>
-						</div>
-						<div style={ { width: "20%", display: "flex" } }>
-							<Button onClick={ addFilter } style={ { height: "100%", width: "100%" } }
-								disabled={ !searchKey || !searchString }>
-								Add Filter
-							</Button>
-						</div>
-				</form>
-			</div>
-		}
 
 		{ !filters.length ? null :
 			<div style={ { display: "flex" } }>
