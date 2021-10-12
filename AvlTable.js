@@ -293,7 +293,9 @@ export default class AvlTable extends React.Component {
 		}
 
 		const csvData = data.reduce((csvData, row) => {
-			csvData.push(keys.map(k => row[k]).join());
+			csvData.push(
+				keys.map(k => get(row, k, '')).map(d => d.length ? `"${ d }"` : d).join()
+			);
 			return csvData;
 		}, [keys.join()]).join("\n");
 
